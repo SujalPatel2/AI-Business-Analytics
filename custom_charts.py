@@ -114,11 +114,29 @@ def show_custom_charts(df: pd.DataFrame):
             apply_chart_theme(fig, f"{chart_type}: {y_col} by {x_col}")
             st.plotly_chart(fig, use_container_width=True)
 
-            # Download chart
-            img_bytes = fig.to_image(format="png", width=1200, height=600)
-            st.download_button("⬇️ Download Chart as PNG", data=img_bytes,
-                               file_name=f"{chart_type.lower()}_{x_col}_{y_col}.png",
-                               mime="image/png")
+            dl1, dl2 = st.columns(2)
+            with dl1:
+                html_str = fig.to_html(full_html=True, include_plotlyjs="cdn")
+                st.download_button(
+                    "⬇️ Download as HTML",
+                    data=html_str,
+                    file_name=f"{chart_type.lower()}_{x_col}_{y_col}.html",
+                    mime="text/html",
+                    use_container_width=True,
+                )
+            with dl2:
+                try:
+                    import kaleido  # noqa
+                    img_bytes = fig.to_image(format="png", width=1200, height=600)
+                    st.download_button(
+                        "⬇️ Download as PNG",
+                        data=img_bytes,
+                        file_name=f"{chart_type.lower()}_{x_col}_{y_col}.png",
+                        mime="image/png",
+                        use_container_width=True,
+                    )
+                except ImportError:
+                    st.info("💡 PNG ke liye: pip install kaleido", icon="ℹ️")
 
     except Exception as e:
         st.error(f"Chart error: {e}. Try a different combination.")
